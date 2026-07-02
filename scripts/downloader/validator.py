@@ -26,8 +26,9 @@ class CSVValidator:
             return False
 
         try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                header = file.readline().strip().split(",")
+            # utf-8-sig automatically removes BOM if present
+            with open(file_path, "r", encoding="utf-8-sig") as file:
+                header = [col.strip() for col in file.readline().strip().split(",")]
 
         except Exception:
             return False

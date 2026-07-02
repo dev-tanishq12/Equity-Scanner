@@ -87,9 +87,9 @@ class NSEDownloader:
 
                     self.create_session()
 
-            except requests.RequestException:
-
-                pass
+            except requests.RequestException as e:
+                print(f"\nRequest Error: {type(e).__name__}")
+                print(e)
 
             time.sleep(
                 2 ** attempt
