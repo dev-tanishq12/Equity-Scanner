@@ -1,4 +1,29 @@
+# Virtual Environment
 venv/
+.venv/
+
+# Python
 __pycache__/
-*.pyc
-data/
+*.py[cod]
+
+# VS Code
+.vscode/
+
+# Data
+data/raw/
+data/processed/
+data/exports/
+
+# Logs
+*.log
+data/logs/*.csv
+
+# Metadata generated files
+data/metadata/*.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS Files
+.DS_Store
+Thumbs.db
