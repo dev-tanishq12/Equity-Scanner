@@ -1,9 +1,6 @@
 from pathlib import Path
 
-import pandas as pd
-
-
-REQUIRED_COLUMNS = [
+REQUIRED_COLUMNS = {
     "SYMBOL",
     "SERIES",
     "DATE1",
@@ -13,8 +10,8 @@ REQUIRED_COLUMNS = [
     "CLOSE_PRICE",
     "TTL_TRD_QNTY",
     "DELIV_QTY",
-    "DELIV_PER"
-]
+    "DELIV_PER",
+}
 
 
 class CSVValidator:
@@ -29,15 +26,10 @@ class CSVValidator:
             return False
 
         try:
-
-            df = pd.read_csv(file_path, nrows=5)
+            with open(file_path, "r", encoding="utf-8") as file:
+                header = file.readline().strip().split(",")
 
         except Exception:
             return False
 
-        for col in REQUIRED_COLUMNS:
-
-            if col not in df.columns:
-                return False
-
-        return True
+        return REQUIRED_COLUMNS.issubset(set(header))

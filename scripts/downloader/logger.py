@@ -1,35 +1,43 @@
 import csv
-from pathlib import Path
+from datetime import datetime
 
-from config import LOG_DIR
-
-LOG_FILE = LOG_DIR / "download_log.csv"
+from scripts.config import LOG_DIR
 
 
 class DownloadLogger:
 
     def __init__(self):
 
-        if not LOG_FILE.exists():
+        self.log_file = LOG_DIR / "download_log.csv"
 
-            with open(LOG_FILE, "w", newline="") as file:
+        if not self.log_file.exists():
+
+            with open(self.log_file, "w", newline="", encoding="utf-8") as file:
 
                 writer = csv.writer(file)
 
                 writer.writerow([
+                    "Timestamp",
                     "Date",
                     "Filename",
                     "Status",
                     "Reason"
                 ])
 
-    def log(self, date, filename, status, reason=""):
+    def log(
+        self,
+        date,
+        filename,
+        status,
+        reason=""
+    ):
 
-        with open(LOG_FILE, "a", newline="") as file:
+        with open(self.log_file, "a", newline="", encoding="utf-8") as file:
 
             writer = csv.writer(file)
 
             writer.writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 date,
                 filename,
                 status,

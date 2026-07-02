@@ -1,14 +1,19 @@
+from datetime import timedelta
+
+
 class DownloadStatistics:
 
     def __init__(self):
 
         self.downloaded = 0
-        self.existing = 0
+        self.exists = 0
+        self.weekend = 0
         self.holiday = 0
         self.failed = 0
+
         self.total = 0
 
-    def increment(self, status):
+    def update(self, status):
 
         self.total += 1
 
@@ -16,31 +21,46 @@ class DownloadStatistics:
             self.downloaded += 1
 
         elif status == "EXISTS":
-            self.existing += 1
+            self.exists += 1
 
-        elif status in ["HOLIDAY", "NOT_FOUND"]:
+        elif status == "WEEKEND":
+            self.weekend += 1
+
+        elif status == "HOLIDAY":
             self.holiday += 1
 
         elif status == "FAILED":
             self.failed += 1
 
-    def print_summary(self):
+    def summary(self, elapsed_seconds):
 
-        print("\n")
-    
-        print("=" * 60)
+        trading_days = (
+            self.downloaded +
+            self.exists +
+            self.holiday +
+            self.failed
+        )
+
+        success = self.downloaded + self.exists
+
+        success_rate = (
+            (success / trading_days) * 100
+            if trading_days else 0
+        )
+
+        print("\n" + "=" * 60)
         print("DOWNLOAD SUMMARY")
         print("=" * 60)
-    
-        print(f"Downloaded      : {self.downloaded}")
-        print(f"Already Exists  : {self.existing}")
-        print(f"Holiday         : {self.holiday}")
-        print(f"Failed          : {self.failed}")
-    
+
+        print(f"Total Dates       : {self.total}")
+        print(f"Weekend           : {self.weekend}")
+        print(f"Trading Days      : {trading_days}")
         print("-" * 60)
-    
-        success = self.downloaded + self.existing
-    
-        print(f"Successful      : {success}")
-    
+        print(f"Downloaded        : {self.downloaded}")
+        print(f"Already Exists    : {self.exists}")
+        print(f"Holiday           : {self.holiday}")
+        print(f"Failed            : {self.failed}")
+        print("-" * 60)
+        print(f"Success Rate      : {success_rate:.2f}%")
+        print(f"Elapsed Time      : {timedelta(seconds=int(elapsed_seconds))}")
         print("=" * 60)
