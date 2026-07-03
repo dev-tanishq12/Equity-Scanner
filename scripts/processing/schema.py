@@ -1,0 +1,17 @@
+EXPECTED_COLUMNS = [
+    "SYMBOL",
+    "SERIES",
+    "DATE1",
+    "PREV_CLOSE",
+    "OPEN_PRICE",
+    "HIGH_PRICE",
+    "LOW_PRICE",
+    "LAST_PRICE",
+    "CLOSE_PRICE",
+    "AVG_PRICE",
+    "TTL_TRD_QNTY",
+    "TURNOVER_LACS",
+    "NO_OF_TRADES",
+    "DELIV_QTY",
+    "DELIV_PER",
+]

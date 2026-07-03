@@ -1,4 +1,4 @@
-Development Log — Day 1
+**Development Log — Day 1**
 Date: 01 July 2026
 
 Objective: Set up the Equity Scanner project and build the initial version of the NSE historical data downloader.
@@ -41,7 +41,7 @@ Designing a scalable project architecture.
 Outcome
 ✅ Project architecture finalized and initial downloader implemented successfully.
 
-Development Log — Day 2
+**Development Log — Day 2**
 
 Date: 02 July 2026
 
@@ -117,3 +117,106 @@ Building modular and maintainable software.
 Outcome
 
 ✅ Milestone 1 Completed — Historical Data Ingestion Engine
+
+**Development Log — Day 3**
+Module: ETL Pipeline Completion
+
+Objective
+
+Complete the ETL (Extract–Transform–Load) pipeline by building the data processing and validation modules required to convert raw NSE Bhavcopy files into a clean, analysis-ready dataset.
+
+Sprint 5.2 – Merge Engine
+Completed
+Implemented the DataMerger module.
+Read all downloaded daily Bhavcopy CSV files.
+Merged 511 daily reports into a single master dataset.
+Standardized column names by:
+Removing leading/trailing spaces.
+Converting all headers to uppercase.
+Generated master_equity_data.csv.
+Output
+CSV Files Merged: 511
+Total Records: 1,494,827
+Total Columns: 15
+Sprint 5.3 – Data Cleaning
+Completed
+
+Developed the DataCleaner module.
+
+Features Implemented
+Standardized column names.
+Standardized text columns (SYMBOL, SERIES).
+Converted DATE1 to datetime format.
+Converted all numeric columns to appropriate data types.
+Removed exact duplicate records.
+Sorted records by:
+SYMBOL
+DATE1
+Generated clean_master_equity_data.csv.
+Output
+Records Loaded: 1,494,827
+Exact Duplicate Records Removed: 51,210
+Final Records: 1,443,617
+Data Debugging & Investigation
+
+Several data-related issues were identified and resolved during development.
+
+1. Column Header Issue
+Problem
+
+Merged dataset contained leading spaces in column names.
+
+Example:
+
+" SERIES"
+Resolution
+
+Implemented automatic column normalization by:
+
+Stripping whitespace.
+Converting all column names to uppercase.
+2. Date Parsing Issue
+Problem
+
+Initial datetime conversion resulted in incorrect date interpretation and invalid duplicate detection.
+
+Resolution
+
+Updated datetime parsing logic and validated the final dataset date range.
+
+Final Date Range:
+
+2024-07-01 → 2026-07-01
+3. Duplicate Record Investigation
+
+Initially suspected duplicate trading days or duplicate downloaded files.
+
+Performed detailed analysis by:
+
+Checking duplicate trading dates.
+Checking duplicate filenames.
+Verifying duplicate rows by security series.
+Comparing complete row contents.
+Findings
+Duplicate trading dates: 0
+Duplicate downloaded files: 0
+Exact duplicate records: 51,210
+
+Confirmed that removing exact duplicate rows is safe.
+
+Sprint 6 – Data Quality Validation
+
+Implemented the DataQuality module.
+
+Validation Checks
+Dataset row count
+Column count
+Missing value analysis
+Duplicate row verification
+Negative price validation
+Negative quantity validation
+Delivery percentage validation
+Date range validation
+Unique security count
+
+✅ Milestone 2 Completed
