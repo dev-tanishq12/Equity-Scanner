@@ -1,29 +1,72 @@
-# Virtual Environment
-venv/
-.venv/
-
+# ============================
 # Python
+# ============================
+
 __pycache__/
 *.py[cod]
+*$py.class
 
-# VS Code
+# Virtual Environment
+venv/
+.env/
+.venv/
+
+# ============================
+# Environment Variables
+# ============================
+
+.env
+
+# ============================
+# IDE
+# ============================
+
 .vscode/
+.idea/
 
-# Data
-data/raw/
-data/processed/
-data/exports/
+# ============================
+# Operating System
+# ============================
 
-# Logs
-*.log
-data/logs/*.csv
-
-# Metadata generated files
-data/metadata/*.json
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS Files
 .DS_Store
 Thumbs.db
+
+# ============================
+# Logs
+# ============================
+
+logs/
+*.log
+
+# ============================
+# Python Cache
+# ============================
+
+.pytest_cache/
+.mypy_cache/
+
+# ============================
+# Jupyter
+# ============================
+
+.ipynb_checkpoints/
+
+# ============================
+# Database
+# ============================
+
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================
+# Data Files (Large)
+# ============================
+
+data/raw/
+data/processed/
+
+# Keep folder structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+

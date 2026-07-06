@@ -1,9 +1,9 @@
-**Development Log — Day 1**
+## Development Log — Day 1
 Date: 01 July 2026
 
 Objective: Set up the Equity Scanner project and build the initial version of the NSE historical data downloader.
 
-Work Completed: Project Initialization, Created GitHub repository Equity-Scanner, Set up Python virtual environment, Added requirements.txt, .gitignore, and initial README.md, Created the project folder structure.
+## Work Completed: Project Initialization, Created GitHub repository Equity-Scanner, Set up Python virtual environment, Added requirements.txt, .gitignore, and initial README.md, Created the project folder structure.
 
 Project Architecture
 
@@ -41,13 +41,13 @@ Designing a scalable project architecture.
 Outcome
 ✅ Project architecture finalized and initial downloader implemented successfully.
 
-**Development Log — Day 2**
+## Development Log — Day 2
 
 Date: 02 July 2026
 
 Objective
 
-Complete and validate the historical NSE downloader for two years of market data.
+## Complete and validate the historical NSE downloader for two years of market data.
 
 Work Completed
 Architecture Finalization
@@ -118,12 +118,12 @@ Outcome
 
 ✅ Milestone 1 Completed — Historical Data Ingestion Engine
 
-**Development Log — Day 3**
+## Development Log — Day 3
 Module: ETL Pipeline Completion
 
 Objective
 
-Complete the ETL (Extract–Transform–Load) pipeline by building the data processing and validation modules required to convert raw NSE Bhavcopy files into a clean, analysis-ready dataset.
+## Complete the ETL (Extract–Transform–Load) pipeline by building the data processing and validation modules required to convert raw NSE Bhavcopy files into a clean, analysis-ready dataset.
 
 Sprint 5.2 – Merge Engine
 Completed
@@ -220,3 +220,29 @@ Date range validation
 Unique security count
 
 ✅ Milestone 2 Completed
+
+
+## Day 4 – PostgreSQL Integration
+
+### Completed
+
+- Created a dedicated PostgreSQL database (`equity_scanner`).
+- Designed and executed the database schema (`equity_history` table).
+- Created indexes for optimized querying.
+- Implemented a reusable PostgreSQL connection manager (`database.py`).
+- Developed a bulk data loader (`loader.py`) using pandas and SQLAlchemy.
+- Successfully loaded 1,443,617 cleaned records into PostgreSQL.
+- Verified successful data import through pgAdmin.
+
+Current Database
+
+- Database: `equity_scanner`
+- Table: `equity_history`
+- Total Records: 1,443,617
+- Indexes: 4
+- Status: Ready for scanner development
+
+Current Status
+
+Database integration completed successfully.
+Historical market data is now available for fast SQL-based analysis.
