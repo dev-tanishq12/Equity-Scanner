@@ -73,14 +73,18 @@ class DatabaseLoader:
 
         print("Loading into PostgreSQL...")
 
+        # Clear existing data during development
+        with self.engine.begin() as conn:
+            conn.exec_driver_sql("TRUNCATE TABLE equity_history;")
+
         df.to_sql(
-            name="equity_history",
-            con=self.engine,
-            if_exists="append",
-            index=False,
-            chunksize=50000,
-            method="multi"
-        )
+        name="equity_history",
+        con=self.engine,
+        if_exists="append",
+        index=False,
+        chunksize=50000,
+        method="multi"
+    )
 
         elapsed = time.time() - start
 

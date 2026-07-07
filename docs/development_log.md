@@ -246,3 +246,32 @@ Current Status
 
 Database integration completed successfully.
 Historical market data is now available for fast SQL-based analysis.
+
+## Day 5
+
+## Completed Tasks
+Created a dedicated PostgreSQL database for the project.
+Designed and implemented the equity_history database schema.
+Created indexes to improve query performance.
+Developed a reusable SQLAlchemy-based database connection layer.
+Built a bulk loader to import the cleaned dataset into PostgreSQL.
+Successfully loaded 1,443,617 historical market records.
+Secured database credentials using environment variables (.env).
+Updated project configuration and .gitignore.
+Designed the scanner architecture.
+Implemented the repository layer for database access.
+Built the reusable base scanner.
+Developed the first functional Delivery Scanner.
+Executed the first stock screening strategy and retrieved 864 matching stocks.
+Resolved duplicate loading issues and verified database integrity.
+Refactored the repository to use SQLAlchemy for cleaner and more maintainable database access.
+
+## Day 6
+
+## Completed Tasks
+Enhanced the repository layer with reusable query methods.
+Implemented the Volume Breakout Scanner using a 20-day rolling average of trading volume.
+Developed the Price Breakout Scanner using the previous 20-day highest high.
+Validated scanner outputs against the PostgreSQL dataset.
+Built reusable analytics using pandas (groupby, rolling, shift, transform).
+Expanded the scanner framework with a modular architecture for future strategy development.
