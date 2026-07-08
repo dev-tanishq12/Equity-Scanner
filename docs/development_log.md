@@ -7,38 +7,38 @@ Objective: Set up the Equity Scanner project and build the initial version of th
 
 Project Architecture
 
-Designed a modular project structure with separate folders for: Downloader, Processing, Scanner, Data, Database, Documentation and Downloader Development
-
-Developed the core downloader modules:
-calendar.py
-urls.py
-downloader.py
-validator.py
-logger.py
-statistics.py
-manager.py
-NSE Archive Research
-Studied the NSE Daily Reports page.
-Verified the archive URL format for sec_bhavdata_full.
-Tested downloading a single day's report successfully.
-Downloader Features Implemented
-Date generation
-Weekend detection
-URL generation
-Retry mechanism
-Download manager
-Progress tracking
-CSV validation
-Logging
-Download statistics
-Testing
-Successfully downloaded a single bhavcopy file.
-Verified file naming convention and storage.
-Challenges Faced
-Python package import issues.
-Understanding the NSE archive URL structure.
-Designing a scalable project architecture.
-Outcome
+- Designed a modular project structure with separate folders for: Downloader, Processing, Scanner, Data, Database, Documentation - and Downloader Development
+- 
+- Developed the core downloader modules:
+- calendar.py
+- urls.py
+- downloader.py
+- validator.py
+- logger.py
+- statistics.py
+- manager.py
+- NSE Archive Research
+- Studied the NSE Daily Reports page.
+- Verified the archive URL format for sec_bhavdata_full.
+- Tested downloading a single day's report successfully.
+- Downloader Features Implemented
+- Date generation
+- Weekend detection
+- URL generation
+- Retry mechanism
+- Download manager
+- Progress tracking
+- CSV validation
+- Logging
+- Download statistics
+- Testing
+- Successfully downloaded a single bhavcopy file.
+- Verified file naming convention and storage.
+- Challenges Faced
+- Python package import issues.
+- Understanding the NSE archive URL structure.
+- Designing a scalable project architecture.
+- Outcome
 ✅ Project architecture finalized and initial downloader implemented successfully.
 
 ## Development Log — Day 2
@@ -119,6 +119,8 @@ Outcome
 ✅ Milestone 1 Completed — Historical Data Ingestion Engine
 
 ## Development Log — Day 3
+
+Date: 3 July, 2026
 Module: ETL Pipeline Completion
 
 Objective
@@ -189,41 +191,42 @@ Final Date Range:
 2024-07-01 → 2026-07-01
 3. Duplicate Record Investigation
 
-Initially suspected duplicate trading days or duplicate downloaded files.
-
-Performed detailed analysis by:
-
-Checking duplicate trading dates.
-Checking duplicate filenames.
-Verifying duplicate rows by security series.
-Comparing complete row contents.
-Findings
-Duplicate trading dates: 0
-Duplicate downloaded files: 0
-Exact duplicate records: 51,210
-
-Confirmed that removing exact duplicate rows is safe.
-
-Sprint 6 – Data Quality Validation
-
-Implemented the DataQuality module.
-
-Validation Checks
-Dataset row count
-Column count
-Missing value analysis
-Duplicate row verification
-Negative price validation
-Negative quantity validation
-Delivery percentage validation
-Date range validation
-Unique security count
+- Initially suspected duplicate trading days or duplicate downloaded files.
+- 
+- Performed detailed analysis by:
+- 
+- Checking duplicate trading dates.
+- Checking duplicate filenames.
+- Verifying duplicate rows by security series.
+- Comparing complete row contents.
+- Findings
+- Duplicate trading dates: 0
+- Duplicate downloaded files: 0
+- Exact duplicate records: 51,210
+- 
+- Confirmed that removing exact duplicate rows is safe.
+- 
+- Sprint 6 – Data Quality Validation
+- 
+- Implemented the DataQuality module.
+- 
+- Validation Checks
+- Dataset row count
+- Column count
+- Missing value analysis
+- Duplicate row verification
+- Negative price validation
+- Negative quantity validation
+- Delivery percentage validation
+- Date range validation
+- Unique security count
 
 ✅ Milestone 2 Completed
 
 
 ## Day 4 – PostgreSQL Integration
 
+Date: 6 July, 2026
 ### Completed
 
 - Created a dedicated PostgreSQL database (`equity_scanner`).
@@ -233,6 +236,15 @@ Unique security count
 - Developed a bulk data loader (`loader.py`) using pandas and SQLAlchemy.
 - Successfully loaded 1,443,617 cleaned records into PostgreSQL.
 - Verified successful data import through pgAdmin.
+- Secured database credentials using environment variables (.env).
+- Updated project configuration and .gitignore.
+- Designed the scanner architecture.
+- Implemented the repository layer for database access.
+- Built the reusable base scanner.
+- Developed the first functional Delivery Scanner.
+- Executed the first stock screening strategy and retrieved 864 matching stocks.
+- Resolved duplicate loading issues and verified database integrity.
+- Refactored the repository to use SQLAlchemy for cleaner and more maintainable database access.
 
 Current Database
 
@@ -249,29 +261,24 @@ Historical market data is now available for fast SQL-based analysis.
 
 ## Day 5
 
+Date: 7 July, 2026
+
 ## Completed Tasks
-Created a dedicated PostgreSQL database for the project.
-Designed and implemented the equity_history database schema.
-Created indexes to improve query performance.
-Developed a reusable SQLAlchemy-based database connection layer.
-Built a bulk loader to import the cleaned dataset into PostgreSQL.
-Successfully loaded 1,443,617 historical market records.
-Secured database credentials using environment variables (.env).
-Updated project configuration and .gitignore.
-Designed the scanner architecture.
-Implemented the repository layer for database access.
-Built the reusable base scanner.
-Developed the first functional Delivery Scanner.
-Executed the first stock screening strategy and retrieved 864 matching stocks.
-Resolved duplicate loading issues and verified database integrity.
-Refactored the repository to use SQLAlchemy for cleaner and more maintainable database access.
+- Enhanced the repository layer with reusable query methods.
+- Implemented the Volume Breakout Scanner using a 20-day rolling average of trading volume.
+- Developed the Price Breakout Scanner using the previous 20-day highest high.
+- Validated scanner outputs against the PostgreSQL dataset.
+- Built reusable analytics using pandas (groupby, rolling, shift, transform).
+- Expanded the scanner framework with a modular architecture for future strategy development.
 
 ## Day 6
 
+Date: 8 July, 2026
+
 ## Completed Tasks
-Enhanced the repository layer with reusable query methods.
-Implemented the Volume Breakout Scanner using a 20-day rolling average of trading volume.
-Developed the Price Breakout Scanner using the previous 20-day highest high.
-Validated scanner outputs against the PostgreSQL dataset.
-Built reusable analytics using pandas (groupby, rolling, shift, transform).
-Expanded the scanner framework with a modular architecture for future strategy development.
+- Refactored the scanner framework to improve code reusability through a common BaseScanner.
+- Enhanced the Volume Breakout and Price Breakout scanners to use shared preprocessing logic.
+- Redesigned the Gap Scanner using percentage-based gap detection with configurable thresholds and liquidity filters.
+- Implemented a 52-Week High Scanner using rolling historical highs over the previous 252 trading sessions.
+- Successfully developed and validated five scanner modules against the PostgreSQL database.
+- Strengthened the overall scanner architecture, making it easier to add new scanners and strategy-based screening modules.

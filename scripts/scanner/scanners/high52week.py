@@ -1,28 +1,22 @@
-import pandas as pd
-
 from scripts.scanner.base import BaseScanner
 
 
-class BreakoutScanner(BaseScanner):
+class High52WeekScanner(BaseScanner):
 
-    def price_breakout(
+    def fifty_two_week_high(
         self,
-        window=20
+        window=252
     ):
 
         print("Loading historical market data...")
 
-        # ----------------------------------
-        # Get Standard Market Data
-        # ----------------------------------
-
         df = self.get_market_data()
 
         # ----------------------------------
-        # Previous 20-Day High
+        # Previous 52-Week High
         # ----------------------------------
 
-        df["previous_high"] = (
+        df["previous_52w_high"] = (
 
             df.groupby("symbol")["high_price"]
 
@@ -54,21 +48,31 @@ class BreakoutScanner(BaseScanner):
         ].copy()
 
         # ----------------------------------
-        # Breakout Stocks
+        # Breakout Percentage
+        # ----------------------------------
+
+        latest_df["breakout_percentage"] = (
+            (
+                latest_df["close_price"]
+                - latest_df["previous_52w_high"]
+            )
+            /
+            latest_df["previous_52w_high"]
+        ) * 100
+
+        # ----------------------------------
+        # Scanner
         # ----------------------------------
 
         result = latest_df[
-            latest_df["close_price"] >
-            latest_df["previous_high"]
+            latest_df["close_price"]
+            >=
+            latest_df["previous_52w_high"]
         ]
-
-        # ----------------------------------
-        # Sort Results
-        # ----------------------------------
 
         return result.sort_values(
             by=[
-                "close_price",
+                "breakout_percentage",
                 "turnover_lacs"
             ],
             ascending=[
