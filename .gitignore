@@ -6,9 +6,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# ============================
 # Virtual Environment
+# ============================
+
 venv/
-.env/
 .venv/
 
 # ============================
@@ -60,7 +62,13 @@ logs/
 *.sqlite3
 
 # ============================
-# Data Files (Large)
+# Generated Results
+# ============================
+
+results/
+
+# ============================
+# Large Data Files
 # ============================
 
 data/raw/
@@ -69,4 +77,3 @@ data/processed/
 # Keep folder structure
 !data/raw/.gitkeep
 !data/processed/.gitkeep
-

@@ -3,7 +3,7 @@ import time
 
 import pandas as pd
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 from scripts.config import PROCESSED_DIR
 
@@ -77,14 +77,51 @@ class DatabaseLoader:
         with self.engine.begin() as conn:
             conn.exec_driver_sql("TRUNCATE TABLE equity_history;")
 
-        df.to_sql(
-        name="equity_history",
-        con=self.engine,
-        if_exists="append",
-        index=False,
-        chunksize=50000,
-        method="multi"
-    )
+        with self.engine.begin() as conn:
+            for chunk in [df.iloc[i:i + 50000] for i in range(0, len(df), 50000)]:
+                records = chunk.to_dict(orient="records")
+
+                for record in records:
+                    conn.execute(
+                        text(
+                            """
+                            INSERT INTO equity_history (
+                                symbol,
+                                series,
+                                trade_date,
+                                prev_close,
+                                open_price,
+                                high_price,
+                                low_price,
+                                last_price,
+                                close_price,
+                                avg_price,
+                                ttl_trd_qnty,
+                                turnover_lacs,
+                                no_of_trades,
+                                deliv_qty,
+                                deliv_per
+                            ) VALUES (
+                                :symbol,
+                                :series,
+                                :trade_date,
+                                :prev_close,
+                                :open_price,
+                                :high_price,
+                                :low_price,
+                                :last_price,
+                                :close_price,
+                                :avg_price,
+                                :ttl_trd_qnty,
+                                :turnover_lacs,
+                                :no_of_trades,
+                                :deliv_qty,
+                                :deliv_per
+                            )
+                            """
+                        ),
+                        record
+                    )
 
         elapsed = time.time() - start
 

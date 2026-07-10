@@ -1,4 +1,5 @@
 import pandas as pd
+from sqlalchemy import text
 
 from database.database import get_engine
 
@@ -19,11 +20,17 @@ class EquityRepository:
         params=None
     ):
 
-        return pd.read_sql(
-            query,
-            self.engine,
-            params=params
-        )
+        normalized_query = query
+        normalized_params = params or {}
+
+        if params:
+            normalized_query = query.replace("%(", ":").replace(")s", "")
+
+        with self.engine.connect() as connection:
+            result = connection.execute(text(normalized_query), normalized_params)
+            columns = result.keys()
+            rows = result.fetchall()
+            return pd.DataFrame(rows, columns=columns)
 
     # --------------------------------------------------
     # Latest Trading Date

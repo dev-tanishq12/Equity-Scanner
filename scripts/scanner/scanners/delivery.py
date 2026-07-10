@@ -1,5 +1,3 @@
-import pandas as pd
-
 from scripts.scanner.base import BaseScanner
 
 
@@ -23,9 +21,8 @@ class DeliveryScanner(BaseScanner):
         ORDER BY deliv_per DESC;
         """
 
-        return pd.read_sql(
+        return self.repo.execute_query(
             query,
-            self.repo.engine,
             params={
                 "trade_date": latest,
                 "delivery": minimum_delivery
