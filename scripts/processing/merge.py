@@ -19,6 +19,8 @@ class DataMerger:
         print("MERGING DAILY CSV FILES")
         print("=" * 60)
 
+        print(f"CSV Files Found : {len(csv_files)}")
+
         dataframes = []
 
         for file in tqdm(csv_files, desc="Reading CSV Files"):
@@ -73,9 +75,10 @@ class DataMerger:
         print("MERGE COMPLETE")
         print("=" * 60)
 
-        print(f"Rows      : {len(master_df):,}")
-        print(f"Columns   : {len(master_df.columns)}")
-        print(f"Saved To  : {output_file}")
+        print(f"Rows            : {len(master_df):,}")
+        print(f"Columns         : {len(master_df.columns)}")
+        print(f"Unique Symbols  : {master_df['SYMBOL'].nunique():,}")
+        print(f"Saved To        : {output_file}")
 
         print("=" * 60)
 

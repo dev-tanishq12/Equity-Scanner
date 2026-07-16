@@ -19,8 +19,8 @@ for folder in [RAW_DIR, PROCESSED_DIR, LOG_DIR]:
 # Download Configuration
 # ==========================
 
-START_DATE = "2024-07-01"
-END_DATE = "2026-07-01"
+START_DATE = "2026-07-02"
+END_DATE = "2026-07-15"
 
 CONNECT_TIMEOUT = 5
 READ_TIMEOUT = 15

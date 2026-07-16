@@ -7,7 +7,10 @@ from sqlalchemy import create_engine, text
 
 from scripts.config import PROCESSED_DIR
 
-# Load environment variables
+# --------------------------------------------------
+# Load Environment Variables
+# --------------------------------------------------
+
 load_dotenv()
 
 
@@ -31,6 +34,10 @@ class DatabaseLoader:
 
         self.engine = create_engine(connection_string)
 
+    # --------------------------------------------------
+    # Load Data
+    # --------------------------------------------------
+
     def load(self):
 
         print("=" * 60)
@@ -47,13 +54,14 @@ class DatabaseLoader:
             low_memory=False
         )
 
-        print(f"Rows : {len(df):,}")
+        print(f"CSV Rows : {len(df):,}")
 
-        # --------------------------------------------------
-        # Rename columns to match PostgreSQL table
-        # --------------------------------------------------
+        # ----------------------------------------------
+        # Rename columns
+        # ----------------------------------------------
 
         df.columns = [
+
             "symbol",
             "series",
             "trade_date",
@@ -69,66 +77,178 @@ class DatabaseLoader:
             "no_of_trades",
             "deliv_qty",
             "deliv_per"
+
         ]
 
-        print("Loading into PostgreSQL...")
+        insert_query = text("""
 
-        # Clear existing data during development
+            INSERT INTO equity_history (
+
+                symbol,
+                series,
+                trade_date,
+                prev_close,
+                open_price,
+                high_price,
+                low_price,
+                last_price,
+                close_price,
+                avg_price,
+                ttl_trd_qnty,
+                turnover_lacs,
+                no_of_trades,
+                deliv_qty,
+                deliv_per
+
+            )
+
+            VALUES (
+
+                :symbol,
+                :series,
+                :trade_date,
+                :prev_close,
+                :open_price,
+                :high_price,
+                :low_price,
+                :last_price,
+                :close_price,
+                :avg_price,
+                :ttl_trd_qnty,
+                :turnover_lacs,
+                :no_of_trades,
+                :deliv_qty,
+                :deliv_per
+
+            )
+
+        """)
+
         with self.engine.begin() as conn:
-            conn.exec_driver_sql("TRUNCATE TABLE equity_history;")
 
-        with self.engine.begin() as conn:
-            for chunk in [df.iloc[i:i + 50000] for i in range(0, len(df), 50000)]:
-                records = chunk.to_dict(orient="records")
+            # ------------------------------------------
+            # Existing Records
+            # ------------------------------------------
 
-                for record in records:
-                    conn.execute(
-                        text(
-                            """
-                            INSERT INTO equity_history (
-                                symbol,
-                                series,
-                                trade_date,
-                                prev_close,
-                                open_price,
-                                high_price,
-                                low_price,
-                                last_price,
-                                close_price,
-                                avg_price,
-                                ttl_trd_qnty,
-                                turnover_lacs,
-                                no_of_trades,
-                                deliv_qty,
-                                deliv_per
-                            ) VALUES (
-                                :symbol,
-                                :series,
-                                :trade_date,
-                                :prev_close,
-                                :open_price,
-                                :high_price,
-                                :low_price,
-                                :last_price,
-                                :close_price,
-                                :avg_price,
-                                :ttl_trd_qnty,
-                                :turnover_lacs,
-                                :no_of_trades,
-                                :deliv_qty,
-                                :deliv_per
-                            )
-                            """
-                        ),
-                        record
+            existing = conn.execute(
+
+                text("""
+
+                    SELECT COUNT(*)
+
+                    FROM equity_history
+
+                """)
+
+            ).scalar()
+
+            print(f"Existing Rows : {existing:,}")
+
+            # ------------------------------------------
+            # Replace Existing Data
+            # ------------------------------------------
+
+            print("Clearing existing records...")
+
+            conn.execute(
+
+                text("""
+
+                    TRUNCATE TABLE equity_history
+
+                """)
+
+            )
+
+            print("Loading into PostgreSQL...")
+
+            chunk_size = 50000
+
+            for start_row in range(
+
+                0,
+
+                len(df),
+
+                chunk_size
+
+            ):
+
+                chunk = df.iloc[
+                    start_row:
+                    start_row + chunk_size
+                ]
+
+                conn.execute(
+
+                    insert_query,
+
+                    chunk.to_dict(
+                        orient="records"
                     )
+
+                )
+
+            # ------------------------------------------
+            # Verification
+            # ------------------------------------------
+
+            loaded = conn.execute(
+
+                text("""
+
+                    SELECT COUNT(*)
+
+                    FROM equity_history
+
+                """)
+
+            ).scalar()
+
+            latest = conn.execute(
+
+                text("""
+
+                    SELECT MAX(trade_date)
+
+                    FROM equity_history
+
+                """)
+
+            ).scalar()
+
+            symbols = conn.execute(
+
+                text("""
+
+                    SELECT COUNT(DISTINCT symbol)
+
+                    FROM equity_history
+
+                """)
+
+            ).scalar()
 
         elapsed = time.time() - start
 
         print()
+
         print("=" * 60)
         print("LOAD COMPLETE")
         print("=" * 60)
-        print(f"Rows Loaded : {len(df):,}")
-        print(f"Elapsed Time: {elapsed:.2f} seconds")
+
+        print(f"CSV Rows        : {len(df):,}")
+        print(f"Rows Loaded     : {loaded:,}")
+        print(f"Unique Symbols  : {symbols:,}")
+        print(f"Latest Date     : {latest}")
+        print(f"Elapsed Time    : {elapsed:.2f} sec")
+
+        if loaded == len(df):
+
+            print("STATUS          : PASSED")
+
+        else:
+
+            print("STATUS          : FAILED")
+
         print("=" * 60)
