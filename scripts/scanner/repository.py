@@ -176,3 +176,35 @@ class EquityRepository:
             self.execute_query(query)
             .iloc[0]["total"]
         )
+    
+    # ----------------------------------
+    # High Delivery Stocks
+    # ----------------------------------
+
+    def get_high_delivery(
+        self,
+        trade_date,
+        minimum_delivery=60
+    ):
+
+        query = """
+        SELECT
+            symbol,
+            trade_date,
+            close_price,
+            deliv_per
+        FROM equity_history
+        WHERE
+            trade_date = %(trade_date)s
+            AND series = 'EQ'
+            AND deliv_per >= %(delivery)s
+        ORDER BY deliv_per DESC;
+        """
+
+        return self.execute_query(
+            query,
+            params={
+                "trade_date": trade_date,
+                "delivery": minimum_delivery
+            }
+        )
