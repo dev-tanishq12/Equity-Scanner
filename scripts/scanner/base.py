@@ -44,12 +44,16 @@ class BaseScanner:
             "prev_close",
             "deliv_per",
             "turnover_lacs",
-            "volume"
+            "ttl_trd_qnty",
+            "no_of_trades"
         ]
 
         for column in numeric_columns:
             if column in df.columns:
-                df[column] = pd.to_numeric(df[column], errors="coerce")
+                df[column] = pd.to_numeric(
+                    df[column],
+                    errors="coerce"
+                )
 
         df = df[
             df["series"] == "EQ"
@@ -68,3 +72,29 @@ class BaseScanner:
         )
 
         return df
+
+    # ----------------------------------
+    # Latest Trading Day Data
+    # ----------------------------------
+
+    def latest_market_data(self):
+
+        latest = self.latest_date()
+
+        df = self.get_market_data()
+
+        return df[
+            df["trade_date"] == latest
+        ].copy()
+
+    # ----------------------------------
+    # Filter Any DataFrame by Latest Date
+    # ----------------------------------
+
+    def latest_dataframe(self, df):
+
+        latest = self.latest_date()
+
+        return df[
+            df["trade_date"] == latest
+        ].copy()

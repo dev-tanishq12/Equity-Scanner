@@ -1,5 +1,3 @@
-import pandas as pd
-
 from scripts.scanner.base import BaseScanner
 
 
@@ -14,6 +12,10 @@ class VolumeScanner(BaseScanner):
         print("Loading historical market data...")
 
         df = self.get_market_data()
+
+        # ----------------------------------
+        # Calculate Average Volume
+        # ----------------------------------
 
         df["avg_volume"] = (
 
@@ -32,31 +34,54 @@ class VolumeScanner(BaseScanner):
 
         )
 
-        latest = self.latest_date()
+        # ----------------------------------
+        # Latest Trading Day
+        # ----------------------------------
 
-        latest_df = df[
-            df["trade_date"] == latest
-        ].copy()
+        latest_df = self.latest_dataframe(df)
+
+        # ----------------------------------
+        # Volume Ratio
+        # ----------------------------------
 
         latest_df["volume_ratio"] = (
+
             latest_df["ttl_trd_qnty"]
+
             /
+
             latest_df["avg_volume"]
+
         )
 
+        # ----------------------------------
+        # Volume Breakout Filter
+        # ----------------------------------
+
         result = latest_df[
+
             (latest_df["volume_ratio"] >= multiplier)
-            & (latest_df["ttl_trd_qnty"] >= 100000)
-            & (latest_df["no_of_trades"] >= 500)
+
+            &
+
+            (latest_df["ttl_trd_qnty"] >= 100000)
+
+            &
+
+            (latest_df["no_of_trades"] >= 500)
+
         ]
 
         return result.sort_values(
+
             by=[
                 "volume_ratio",
                 "turnover_lacs"
             ],
+
             ascending=[
                 False,
                 False
             ]
+
         )

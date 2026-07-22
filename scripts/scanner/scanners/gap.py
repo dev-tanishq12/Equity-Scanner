@@ -22,47 +22,67 @@ class GapScanner(BaseScanner):
         # ----------------------------------
 
         df["previous_high"] = (
+
             df.groupby("symbol")["high_price"]
+
             .shift(1)
+
         )
 
-        latest = self.latest_date()
+        # ----------------------------------
+        # Latest Trading Day
+        # ----------------------------------
 
-        latest_df = df[
-            df["trade_date"] == latest
-        ].copy()
+        latest_df = self.latest_dataframe(df)
 
         # ----------------------------------
         # Gap Percentage
         # ----------------------------------
 
         latest_df["gap_percentage"] = (
+
             (
+
                 latest_df["open_price"]
-                - latest_df["previous_high"]
+
+                -
+
+                latest_df["previous_high"]
+
             )
-            / latest_df["previous_high"]
+
+            /
+
+            latest_df["previous_high"]
+
         ) * 100
 
         # ----------------------------------
-        # Scanner
+        # Gap Up Scanner
         # ----------------------------------
 
         result = latest_df[
+
             (latest_df["gap_percentage"] >= gap_percent)
+
             &
+
             (latest_df["no_of_trades"] >= min_trades)
+
         ]
 
         return result.sort_values(
+
             by=[
                 "gap_percentage",
                 "turnover_lacs"
             ],
+
             ascending=[
                 False,
                 False
             ]
+
         )
 
     # --------------------------------------------------
@@ -84,45 +104,65 @@ class GapScanner(BaseScanner):
         # ----------------------------------
 
         df["previous_low"] = (
+
             df.groupby("symbol")["low_price"]
+
             .shift(1)
+
         )
 
-        latest = self.latest_date()
+        # ----------------------------------
+        # Latest Trading Day
+        # ----------------------------------
 
-        latest_df = df[
-            df["trade_date"] == latest
-        ].copy()
+        latest_df = self.latest_dataframe(df)
 
         # ----------------------------------
         # Gap Percentage
         # ----------------------------------
 
         latest_df["gap_percentage"] = (
+
             (
+
                 latest_df["open_price"]
-                - latest_df["previous_low"]
+
+                -
+
+                latest_df["previous_low"]
+
             )
-            / latest_df["previous_low"]
+
+            /
+
+            latest_df["previous_low"]
+
         ) * 100
 
         # ----------------------------------
-        # Scanner
+        # Gap Down Scanner
         # ----------------------------------
 
         result = latest_df[
+
             (latest_df["gap_percentage"] <= -gap_percent)
+
             &
+
             (latest_df["no_of_trades"] >= min_trades)
+
         ]
 
         return result.sort_values(
+
             by=[
                 "gap_percentage",
                 "turnover_lacs"
             ],
+
             ascending=[
                 True,
                 False
             ]
+
         )

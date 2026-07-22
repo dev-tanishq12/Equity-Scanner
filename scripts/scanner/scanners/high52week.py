@@ -41,42 +41,54 @@ class High52WeekScanner(BaseScanner):
         # Latest Trading Day
         # ----------------------------------
 
-        latest = self.latest_date()
-
-        latest_df = df[
-            df["trade_date"] == latest
-        ].copy()
+        latest_df = self.latest_dataframe(df)
 
         # ----------------------------------
         # Breakout Percentage
         # ----------------------------------
 
         latest_df["breakout_percentage"] = (
+
             (
+
                 latest_df["close_price"]
-                - latest_df["previous_52w_high"]
+
+                -
+
+                latest_df["previous_52w_high"]
+
             )
+
             /
+
             latest_df["previous_52w_high"]
+
         ) * 100
 
         # ----------------------------------
-        # Scanner
+        # 52-Week High Scanner
         # ----------------------------------
 
         result = latest_df[
+
             latest_df["close_price"]
+
             >=
+
             latest_df["previous_52w_high"]
+
         ]
 
         return result.sort_values(
+
             by=[
                 "breakout_percentage",
                 "turnover_lacs"
             ],
+
             ascending=[
                 False,
                 False
             ]
+
         )
