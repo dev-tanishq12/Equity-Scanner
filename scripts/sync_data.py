@@ -3,9 +3,7 @@ from scripts.sync.sync_manager import SyncManager
 
 def main():
 
-    manager = SyncManager()
-
-    manager.summary()
+    SyncManager().sync()
 
 
 if __name__ == "__main__":
