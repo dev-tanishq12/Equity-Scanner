@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, text
 
 from scripts.config import PROCESSED_DIR
 
+
 # --------------------------------------------------
 # Load Environment Variables
 # --------------------------------------------------
@@ -32,19 +33,15 @@ class DatabaseLoader:
             f"{os.getenv('DB_NAME')}"
         )
 
-        self.engine = create_engine(connection_string)
+        self.engine = create_engine(
+            connection_string
+        )
 
     # --------------------------------------------------
-    # Load Data
+    # Prepare CSV
     # --------------------------------------------------
 
-    def load(self):
-
-        print("=" * 60)
-        print("POSTGRESQL BULK LOADER")
-        print("=" * 60)
-
-        start = time.time()
+    def _read_csv(self):
 
         print("Reading cleaned dataset...")
 
@@ -54,14 +51,7 @@ class DatabaseLoader:
             low_memory=False
         )
 
-        print(f"CSV Rows : {len(df):,}")
-
-        # ----------------------------------------------
-        # Rename columns
-        # ----------------------------------------------
-
         df.columns = [
-
             "symbol",
             "series",
             "trade_date",
@@ -77,13 +67,26 @@ class DatabaseLoader:
             "no_of_trades",
             "deliv_qty",
             "deliv_per"
-
         ]
 
-        insert_query = text("""
+        # Ensure correct date type
+        df["trade_date"] = pd.to_datetime(
+            df["trade_date"],
+            errors="raise"
+        )
 
+        print(f"CSV Rows : {len(df):,}")
+
+        return df
+
+    # --------------------------------------------------
+    # Insert Query
+    # --------------------------------------------------
+
+    def _get_insert_query(self):
+
+        return text("""
             INSERT INTO equity_history (
-
                 symbol,
                 series,
                 trade_date,
@@ -99,11 +102,8 @@ class DatabaseLoader:
                 no_of_trades,
                 deliv_qty,
                 deliv_per
-
             )
-
             VALUES (
-
                 :symbol,
                 :series,
                 :trade_date,
@@ -119,136 +119,256 @@ class DatabaseLoader:
                 :no_of_trades,
                 :deliv_qty,
                 :deliv_per
-
             )
-
         """)
+
+    # --------------------------------------------------
+    # Incremental Load
+    # --------------------------------------------------
+
+    def load(self):
+
+        print("=" * 60)
+        print("POSTGRESQL INCREMENTAL LOADER")
+        print("=" * 60)
+
+        start_time = time.time()
+
+        df = self._read_csv()
 
         with self.engine.begin() as conn:
 
             # ------------------------------------------
-            # Existing Records
+            # Existing Database Information
             # ------------------------------------------
 
-            existing = conn.execute(
-
+            existing_rows = conn.execute(
                 text("""
-
                     SELECT COUNT(*)
-
                     FROM equity_history
-
                 """)
-
             ).scalar()
 
-            print(f"Existing Rows : {existing:,}")
-
-            # ------------------------------------------
-            # Replace Existing Data
-            # ------------------------------------------
-
-            print("Clearing existing records...")
-
-            conn.execute(
-
+            latest_db_date = conn.execute(
                 text("""
-
-                    TRUNCATE TABLE equity_history
-
+                    SELECT MAX(trade_date)
+                    FROM equity_history
                 """)
+            ).scalar()
 
+            print(
+                f"Existing Rows       : "
+                f"{existing_rows:,}"
             )
 
-            print("Loading into PostgreSQL...")
+            print(
+                f"Latest Database Date: "
+                f"{latest_db_date}"
+            )
+
+            # ------------------------------------------
+            # Determine New Records
+            # ------------------------------------------
+
+            if latest_db_date is None:
+
+                print(
+                    "Database is empty. "
+                    "Loading complete dataset..."
+                )
+
+                new_df = df.copy()
+
+            else:
+
+                latest_db_date = pd.Timestamp(
+                    latest_db_date
+                )
+
+                new_df = df[
+                    df["trade_date"] > latest_db_date
+                ].copy()
+
+            # ------------------------------------------
+            # Nothing New
+            # ------------------------------------------
+
+            if new_df.empty:
+
+                elapsed = (
+                    time.time() - start_time
+                )
+
+                print()
+                print("=" * 60)
+                print("DATABASE ALREADY UP TO DATE")
+                print("=" * 60)
+
+                print(
+                    f"Latest Date  : "
+                    f"{latest_db_date}"
+                )
+
+                print(
+                    f"Rows Added   : 0"
+                )
+
+                print(
+                    f"Elapsed Time : "
+                    f"{elapsed:.2f} sec"
+                )
+
+                print("=" * 60)
+
+                return
+
+            # ------------------------------------------
+            # New Data Summary
+            # ------------------------------------------
+
+            first_new_date = (
+                new_df["trade_date"].min()
+            )
+
+            latest_new_date = (
+                new_df["trade_date"].max()
+            )
+
+            print()
+            print(
+                f"New Rows            : "
+                f"{len(new_df):,}"
+            )
+
+            print(
+                f"First New Date      : "
+                f"{first_new_date.date()}"
+            )
+
+            print(
+                f"Latest New Date     : "
+                f"{latest_new_date.date()}"
+            )
+
+            # ------------------------------------------
+            # Insert New Records
+            # ------------------------------------------
+
+            print()
+            print(
+                "Loading new records "
+                "into PostgreSQL..."
+            )
+
+            insert_query = (
+                self._get_insert_query()
+            )
 
             chunk_size = 50000
 
             for start_row in range(
-
                 0,
-
-                len(df),
-
+                len(new_df),
                 chunk_size
-
             ):
 
-                chunk = df.iloc[
+                chunk = new_df.iloc[
                     start_row:
                     start_row + chunk_size
                 ]
 
                 conn.execute(
-
                     insert_query,
-
                     chunk.to_dict(
                         orient="records"
                     )
-
                 )
 
             # ------------------------------------------
             # Verification
             # ------------------------------------------
 
-            loaded = conn.execute(
-
+            final_rows = conn.execute(
                 text("""
-
                     SELECT COUNT(*)
-
                     FROM equity_history
-
                 """)
-
             ).scalar()
 
-            latest = conn.execute(
-
+            final_latest = conn.execute(
                 text("""
-
                     SELECT MAX(trade_date)
-
                     FROM equity_history
-
                 """)
-
             ).scalar()
 
             symbols = conn.execute(
-
                 text("""
-
-                    SELECT COUNT(DISTINCT symbol)
-
+                    SELECT COUNT(
+                        DISTINCT symbol
+                    )
                     FROM equity_history
-
                 """)
-
             ).scalar()
 
-        elapsed = time.time() - start
+        elapsed = (
+            time.time() - start_time
+        )
+
+        expected_rows = (
+            existing_rows
+            + len(new_df)
+        )
+
+        # --------------------------------------------------
+        # Final Report
+        # --------------------------------------------------
 
         print()
-
         print("=" * 60)
-        print("LOAD COMPLETE")
+        print("INCREMENTAL LOAD COMPLETE")
         print("=" * 60)
 
-        print(f"CSV Rows        : {len(df):,}")
-        print(f"Rows Loaded     : {loaded:,}")
-        print(f"Unique Symbols  : {symbols:,}")
-        print(f"Latest Date     : {latest}")
-        print(f"Elapsed Time    : {elapsed:.2f} sec")
+        print(
+            f"Previous Rows   : "
+            f"{existing_rows:,}"
+        )
 
-        if loaded == len(df):
+        print(
+            f"Rows Added      : "
+            f"{len(new_df):,}"
+        )
 
-            print("STATUS          : PASSED")
+        print(
+            f"Total Rows      : "
+            f"{final_rows:,}"
+        )
+
+        print(
+            f"Unique Symbols  : "
+            f"{symbols:,}"
+        )
+
+        print(
+            f"Latest Date     : "
+            f"{final_latest}"
+        )
+
+        print(
+            f"Elapsed Time    : "
+            f"{elapsed:.2f} sec"
+        )
+
+        if final_rows == expected_rows:
+
+            print(
+                "STATUS          : PASSED"
+            )
 
         else:
 
-            print("STATUS          : FAILED")
+            print(
+                "STATUS          : FAILED"
+            )
 
         print("=" * 60)

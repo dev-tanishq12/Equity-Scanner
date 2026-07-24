@@ -21,7 +21,9 @@ class SyncManager:
     def get_latest_downloaded_date(self):
 
         csv_files = list(
-            self.raw_dir.glob("sec_bhavdata_full_*.csv")
+            self.raw_dir.glob(
+                "sec_bhavdata_full_*.csv"
+            )
         )
 
         if not csv_files:
@@ -33,7 +35,9 @@ class SyncManager:
 
             try:
 
-                date_str = file.stem.split("_")[-1]
+                date_str = (
+                    file.stem.split("_")[-1]
+                )
 
                 file_date = datetime.strptime(
                     date_str,
@@ -57,12 +61,14 @@ class SyncManager:
         return date.today()
 
     # --------------------------------------------------
-    # Generate Missing Dates
+    # Generate Missing Trading Dates
     # --------------------------------------------------
 
     def get_missing_dates(self):
 
-        latest = self.get_latest_downloaded_date()
+        latest = (
+            self.get_latest_downloaded_date()
+        )
 
         if latest is None:
             return []
@@ -75,7 +81,14 @@ class SyncManager:
 
         while current <= today:
 
-            missing.append(current)
+            # Monday = 0
+            # Friday = 4
+            # Saturday = 5
+            # Sunday = 6
+
+            if current.weekday() < 5:
+
+                missing.append(current)
 
             current += timedelta(days=1)
 
@@ -87,7 +100,9 @@ class SyncManager:
 
     def summary(self):
 
-        latest = self.get_latest_downloaded_date()
+        latest = (
+            self.get_latest_downloaded_date()
+        )
 
         today = self.get_today()
 
@@ -97,21 +112,36 @@ class SyncManager:
         print("EQUITY SCANNER DATA SYNC")
         print("=" * 60)
 
-        print(f"Latest CSV   : {latest}")
-        print(f"Today's Date : {today}")
-        print(f"Missing Days : {len(missing)}")
+        print(
+            f"Latest CSV   : {latest}"
+        )
+
+        print(
+            f"Today's Date : {today}"
+        )
+
+        print(
+            f"Missing Days : {len(missing)}"
+        )
 
         if not missing:
 
-            print("\n✓ Data is already up to date.")
+            print(
+                "\nData is already up to date."
+            )
+
             return
 
         print("\nMissing Dates")
         print("-" * 60)
 
-        for d in missing:
+        for trade_date in missing:
 
-            print(d.strftime("%d-%b-%Y"))
+            print(
+                trade_date.strftime(
+                    "%d-%b-%Y"
+                )
+            )
 
         print("=" * 60)
 
@@ -121,29 +151,38 @@ class SyncManager:
 
     def download_missing(self):
 
-        missing_dates = self.get_missing_dates()
+        missing_dates = (
+            self.get_missing_dates()
+        )
 
         if not missing_dates:
 
-            return False
+            return []
 
         downloader = NSEDownloader()
 
-        downloaded = 0
+        downloaded_files = []
 
-        print("\n" + "=" * 60)
+        print()
+        print("=" * 60)
         print("DOWNLOADING MISSING FILES")
         print("=" * 60)
 
         for trade_date in missing_dates:
 
-            url = get_sec_bhavcopy_url(trade_date)
-
-            filename = (
-                f"sec_bhavdata_full_{trade_date:%d%m%Y}.csv"
+            url = get_sec_bhavcopy_url(
+                trade_date
             )
 
-            destination = self.raw_dir / filename
+            filename = (
+                f"sec_bhavdata_full_"
+                f"{trade_date:%d%m%Y}.csv"
+            )
+
+            destination = (
+                self.raw_dir /
+                filename
+            )
 
             status = downloader.download(
                 url,
@@ -151,42 +190,76 @@ class SyncManager:
             )
 
             print(
-                f"{trade_date:%d-%b-%Y} : {status}"
+                f"{trade_date:%d-%b-%Y} "
+                f": {status}"
             )
+
+            # ------------------------------------------
+            # Track ONLY files downloaded this run
+            # ------------------------------------------
 
             if status == "DOWNLOADED":
 
-                downloaded += 1
+                downloaded_files.append(
+                    destination
+                )
 
         print("=" * 60)
-        print(f"Downloaded Files : {downloaded}")
+
+        print(
+            f"Downloaded Files : "
+            f"{len(downloaded_files)}"
+        )
+
         print("=" * 60)
 
-        return downloaded > 0
+        return downloaded_files
 
     # --------------------------------------------------
-    # Merge Data
+    # Incremental Merge
     # --------------------------------------------------
 
-    def merge_data(self):
+    def merge_data(
+        self,
+        new_files
+    ):
 
-        print("\nStarting Merge...\n")
+        print(
+            "\nStarting Incremental Merge...\n"
+        )
 
         merger = DataMerger()
 
-        merger.merge()
+        new_df = (
+            merger.merge_incremental(
+                new_files
+            )
+        )
+
+        return new_df
 
     # --------------------------------------------------
-    # Clean Data
+    # Incremental Clean
     # --------------------------------------------------
 
-    def clean_data(self):
+    def clean_data(
+        self,
+        new_df
+    ):
 
-        print("\nStarting Cleaning...\n")
+        print(
+            "\nStarting Incremental Cleaning...\n"
+        )
 
         cleaner = DataCleaner()
 
-        cleaner.clean()
+        clean_df = (
+            cleaner.clean_incremental(
+                new_df
+            )
+        )
+
+        return clean_df
 
     # --------------------------------------------------
     # Load PostgreSQL
@@ -194,7 +267,9 @@ class SyncManager:
 
     def load_database(self):
 
-        print("\nLoading PostgreSQL...\n")
+        print(
+            "\nLoading PostgreSQL...\n"
+        )
 
         loader = DatabaseLoader()
 
@@ -210,21 +285,90 @@ class SyncManager:
         print("EQUITY SCANNER AUTO SYNC")
         print("=" * 60)
 
+        # ----------------------------------------------
+        # Step 1 - Show Sync Status
+        # ----------------------------------------------
+
         self.summary()
 
-        downloaded = self.download_missing()
+        # ----------------------------------------------
+        # Step 2 - Download New Files
+        # ----------------------------------------------
 
-        if not downloaded:
+        new_files = (
+            self.download_missing()
+        )
 
-            print("\nNothing new to process.")
+        if not new_files:
+
+            print()
+            print(
+                "Nothing new to process."
+            )
+
             return
 
-        self.merge_data()
+        # ----------------------------------------------
+        # Step 3 - Incremental Merge
+        # ----------------------------------------------
 
-        self.clean_data()
+        new_df = self.merge_data(
+            new_files
+        )
+
+        if new_df.empty:
+
+            print()
+            print(
+                "No valid new data "
+                "was merged."
+            )
+
+            return
+
+        # ----------------------------------------------
+        # Step 4 - Incremental Clean
+        # ----------------------------------------------
+
+        clean_df = self.clean_data(
+            new_df
+        )
+
+        if clean_df.empty:
+
+            print()
+            print(
+                "No valid new data "
+                "was cleaned."
+            )
+
+            return
+
+        # ----------------------------------------------
+        # Step 5 - Incremental Database Load
+        # ----------------------------------------------
 
         self.load_database()
 
-        print("\n" + "=" * 60)
-        print("SYNC COMPLETED SUCCESSFULLY")
+        # ----------------------------------------------
+        # Complete
+        # ----------------------------------------------
+
+        print()
+        print("=" * 60)
+        print(
+            "SYNC COMPLETED SUCCESSFULLY"
+        )
+        print("=" * 60)
+
+        print(
+            f"New Files Processed : "
+            f"{len(new_files)}"
+        )
+
+        print(
+            f"New Rows Processed  : "
+            f"{len(clean_df):,}"
+        )
+
         print("=" * 60)
